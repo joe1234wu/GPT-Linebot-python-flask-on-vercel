@@ -1,8 +1,10 @@
+from tempfile import NamedTemporaryFile
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
 from api.chatgpt import ChatGPT
+from api.utils import upload_file_to_cloud, generate_excel
 
 import os
 
@@ -62,6 +64,18 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             image_message)
+        return
+
+    if event.message.text == "打估價單":
+        upload_file_url = "upload_file_url"
+        with NamedTemporaryFile() as tmp:
+            generate_excel(tmp.name)
+            tmp.seek(0)
+            upload_file_url = upload_file_to_cloud(tmp.name)
+            
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f"上傳的檔案= {upload_file_url}"))
         return
 
     if working_status:
