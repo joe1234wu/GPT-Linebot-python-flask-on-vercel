@@ -1,7 +1,7 @@
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
 from api.chatgpt import ChatGPT
 
 import os
@@ -51,6 +51,17 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="好的，我乖乖閉嘴 > <，如果想要我繼續說話，請跟我說 「說話」 > <"))
+        return
+
+    if event.message.text == "圖片":
+        image_message = ImageSendMessage(
+        original_content_url='https://play.google.com/store/apps/details?id=com.google.android.apps.photos&hl=en_US&gl=US',
+        preview_image_url='https://play.google.com/store/apps/details?id=com.google.android.apps.photos&hl=en_US&gl=US'
+        )
+
+        line_bot_api.reply_message(
+            event.reply_token,
+            image_message)
         return
 
     if working_status:
