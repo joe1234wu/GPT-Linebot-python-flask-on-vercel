@@ -55,8 +55,8 @@ def handle_message(event):
 
     if event.message.text == "圖片":
         image_message = ImageSendMessage(
-        original_content_url='https://play.google.com/store/apps/details?id=com.google.android.apps.photos&hl=en_US&gl=US',
-        preview_image_url='https://play.google.com/store/apps/details?id=com.google.android.apps.photos&hl=en_US&gl=US'
+        original_content_url='https://play-lh.googleusercontent.com/ZyWNGIfzUyoajtFcD7NhMksHEZh37f-MkHVGr5Yfefa-IX7yj9SMfI82Z7a2wpdKCA=w480-h960-rw',
+        preview_image_url='https://play-lh.googleusercontent.com/ZyWNGIfzUyoajtFcD7NhMksHEZh37f-MkHVGr5Yfefa-IX7yj9SMfI82Z7a2wpdKCA=w480-h960-rw'
         )
 
         line_bot_api.reply_message(
