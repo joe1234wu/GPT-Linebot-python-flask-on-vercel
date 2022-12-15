@@ -10,6 +10,7 @@ import os
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv("DEFALUT_TALKING", default = "true").lower() == "true"
+start_quote_wf = False
 
 app = Flask(__name__)
 chatgpt = ChatGPT()
@@ -37,6 +38,8 @@ def callback():
 @line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     global working_status
+    global start_quote_wf
+
     if event.message.type != "text":
         return
 
@@ -66,10 +69,19 @@ def handle_message(event):
         return
 
     if event.message.text == "打估價單":
-        upload_file_url = generate_excel_and_upload_wrapper()
+        start_quote_wf = True
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=f"上傳的檔案= {upload_file_url}"))
+            TextSendMessage(text="請輸入 [客戶名稱] [工程名稱]"))
+        return
+
+    if start_quote_wf:
+        customer_name, project_name = event.message.text.split()
+        upload_file_url = generate_excel_and_upload_wrapper(customer_name=customer_name, project_name=project_name)
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f"估價單下載網址= {upload_file_url}"))
+        start_quote_wf = False
         return
 
     if working_status:
