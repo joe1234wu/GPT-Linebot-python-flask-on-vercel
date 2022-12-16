@@ -40,6 +40,8 @@ def handle_message(event):
     global working_status
     global start_quote_wf
 
+    user_id = event.source.user.user_id
+
     if event.message.type != "text":
         return
 
@@ -72,7 +74,7 @@ def handle_message(event):
         start_quote_wf = True
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="請輸入 [客戶名稱] [工程名稱]"))
+            TextSendMessage(text=f"{user_id} 請輸入 [客戶名稱] [工程名稱]"))
         return
 
     if start_quote_wf:

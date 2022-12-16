@@ -1,4 +1,5 @@
 import os
+from typing import List
 import uuid
 import requests
 import tempfile
@@ -62,3 +63,24 @@ def generate_excel(
     # Save the file
     wb.template = False
     wb.save(save_file_path)
+
+
+
+"""
+DATA MODELS
+"""
+from dataclasses import dataclass, field
+
+
+@dataclass
+class QuoteItem:
+    name: str
+    quantity: int
+    unit: str
+    amount: int
+
+@dataclass
+class QuoteData:
+    customer_name: str = ""
+    project_name: str = ""
+    items: List[QuoteItem] = field(default_factory=list)
