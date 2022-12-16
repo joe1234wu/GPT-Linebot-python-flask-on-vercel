@@ -3,14 +3,14 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage
 from api.chatgpt import ChatGPT
-from api.utils import generate_excel_and_upload_wrapper
+from api.utils import generate_excel_and_upload_wrapper, QuoteItem, QuoteData
 
 import os
 
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv("DEFALUT_TALKING", default = "true").lower() == "true"
-start_quote_wf = False
+start_quote_wf_hm = {} #key: user-id, value:  QuoteData
 
 app = Flask(__name__)
 chatgpt = ChatGPT()
@@ -38,9 +38,9 @@ def callback():
 @line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     global working_status
-    global start_quote_wf
+    global start_quote_wf_hm
 
-    user_id = event.source.user.user_id
+    user_id = event.source.user_id
 
     if event.message.type != "text":
         return
@@ -71,19 +71,44 @@ def handle_message(event):
         return
 
     if event.message.text == "打估價單":
-        start_quote_wf = True
+        start_quote_wf_hm[user_id] = QuoteData(status=1)
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"{user_id} 請輸入 [客戶名稱] [工程名稱]"))
         return
 
-    if start_quote_wf:
-        customer_name, project_name = event.message.text.split()
-        upload_file_url = generate_excel_and_upload_wrapper(customer_name=customer_name, project_name=project_name)
+    if user_id in start_quote_wf_hm:
+        quote_data:QuoteData = start_quote_wf_hm[user_id]
+        if quote_data.is_ready:
+            # generate excel
+            customer_name, project_name = event.message.text.split()
+            upload_file_url = generate_excel_and_upload_wrapper(
+                customer_name=customer_name, project_name=project_name
+                )
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"估價單下載網址= {upload_file_url}"))
+            
+            # delete user_id from hashmap
+            start_quote_wf_hm.pop(user_id, None)
+            return
+        
+        # 1: wait for cn, 2: wait for pn 
+        # 3: during item - name 4: during item - quantity
+        # 5: during item - unit 6: during item - amount
+        # 7: during item - complete
+        if quote_data.status == 1: 
+            quote_data.customer_name = event.message.text
+            quote_data.status += 1
+        elif quote_data.status == 2: 
+            quote_data.project_name = event.message.text
+            quote_data.status += 1
+        elif quote_data.status == 3 or event.message.text == "停止估價": 
+            start_quote_wf_hm.pop(user_id, None)
+
         line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=f"估價單下載網址= {upload_file_url}"))
-        start_quote_wf = False
+                event.reply_token,
+                TextSendMessage(text=f"估價單下載網址= {quote_data}"))
         return
 
     if working_status:

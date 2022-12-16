@@ -80,7 +80,15 @@ class QuoteItem:
     amount: int
 
 @dataclass
-class QuoteData:
+class QuoteData: 
+    status = 1 # 1: wait for cn, 2: wait for pn 
+               # 3: during item - name 4: during item - quantity
+               # 5: during item - unit 6: during item - amount
+               # 7: during item - complete
     customer_name: str = ""
     project_name: str = ""
     items: List[QuoteItem] = field(default_factory=list)
+
+    @property
+    def is_ready(self):
+        return self.status == 7 
