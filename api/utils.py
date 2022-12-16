@@ -81,7 +81,7 @@ class QuoteItem:
 
 @dataclass
 class QuoteData: 
-    status = 1 # 1: wait for cn, 2: wait for pn 
+    status:int = 1 # 1: wait for cn, 2: wait for pn 
                # 3: during item - name 4: during item - quantity
                # 5: during item - unit 6: during item - amount
                # 7: during item - complete

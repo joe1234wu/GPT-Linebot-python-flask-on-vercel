@@ -74,7 +74,7 @@ def handle_message(event):
         start_quote_wf_hm[user_id] = QuoteData(status=1)
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=f"{user_id} 請輸入 [客戶名稱] [工程名稱]"))
+            TextSendMessage(text=f"{user_id} 請輸入 [客戶名稱]. 輸入 [停止估價] 隨時中止 "))
         return
 
     if user_id in start_quote_wf_hm:
